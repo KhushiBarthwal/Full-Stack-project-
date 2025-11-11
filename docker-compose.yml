@@ -1,0 +1,51 @@
+version: '3.8'
+
+# MongoDB-based Order Pipeline
+# This replaces the previous PostgreSQL/Supabase setup
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: order-pipeline-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # API Server (optional - can run separately)
+  # Uncomment to run API server in Docker
+  # api:
+  #   build:
+  #     context: ./server
+  #     dockerfile: Dockerfile
+  #   container_name: order-pipeline-api
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     MONGODB_URI: mongodb://admin:password@mongodb:27017/order-pipeline?authSource=admin
+  #     PORT: 3000
+  #     API_URL: http://localhost:3000
+  #     FRONTEND_URL: http://localhost:5173
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./server:/app
+  #     - /app/node_modules
+
+volumes:
+  mongodb-data:
+
+networks:
+  default:
+    name: order-pipeline-network
+
